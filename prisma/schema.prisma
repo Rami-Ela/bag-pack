@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips          Trip[]
+  itemCategories ItemCategory[]
+  itemTemplates  ItemTemplate[]
+
+  @@map("users")
+}
+
+model Trip {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  destination String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  items PackingListItem[]
+
+  @@index([userId])
+  @@map("trips")
+}
+
+model ItemCategory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String?  @default("#3B82F6")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items     PackingListItem[]
+  templates ItemTemplate[]
+
+  @@index([userId])
+  @@map("item_categories")
+}
+
+model ItemTemplate {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   ItemCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+  quantity   Int          @default(1)
+  notes      String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  items PackingListItem[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("item_templates")
+}
+
+model PackingListItem {
+  id          String        @id @default(cuid())
+  tripId      String
+  trip        Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    ItemCategory  @relation(fields: [categoryId], references: [id])
+  templateId  String?
+  template    ItemTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  name        String
+  quantity    Int           @default(1)
+  notes       String?
+  packed      Boolean       @default(false)
+  broughtBack Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([tripId])
+  @@index([categoryId])
+  @@index([templateId])
+  @@map("packing_list_items")
+}
