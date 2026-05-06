@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 interface Item {
   id: string;
@@ -18,119 +19,164 @@ interface Trip {
 }
 
 export default function Home() {
-  const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [newTripName, setNewTripName] = useState('');
   const [newTripDestination, setNewTripDestination] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [newItemQuantity, setNewItemQuantity] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<'packing' | 'return'>('packing');
+  const queryClient = useQueryClient();
 
-  const fetchTrips = useCallback(async () => {
-    const res = await fetch('/api/trips');
-    const data = await res.json();
-    setTrips(data);
-    if (selectedTrip) {
-      const updated = data.find((t: Trip) => t.id === selectedTrip.id);
-      if (updated) setSelectedTrip(updated);
-    }
-  }, [selectedTrip]);
+  const { data: trips = [] } = useQuery<Trip[]>({
+    queryKey: ['trips'],
+    queryFn: () => fetch('/api/trips').then((r) => r.json()),
+  });
 
-  useEffect(() => {
-    fetchTrips();
-  }, []);
+  const currentTrip = trips.find((t) => t.id === selectedTrip?.id) ?? selectedTrip;
 
-  const createTrip = async (e: React.FormEvent) => {
+  // ─── Mutations ────────────────────────────────────────────────────────────
+
+  const createTripMutation = useMutation({
+    mutationFn: (vars: { name: string; destination: string | null }) =>
+      fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(vars),
+      }).then((r) => r.json()),
+    onMutate: async (vars) => {
+      await queryClient.cancelQueries({ queryKey: ['trips'] });
+      const prev = queryClient.getQueryData<Trip[]>(['trips']);
+      const tempId = `temp-${Date.now()}`;
+      const tempTrip: Trip = { id: tempId, ...vars, items: [] };
+      queryClient.setQueryData<Trip[]>(['trips'], (old = []) => [tempTrip, ...old]);
+      setSelectedTrip(tempTrip);
+      return { prev, tempId };
+    },
+    onSuccess: (trip, _vars, ctx) => {
+      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
+        old.map((t) => (t.id === ctx?.tempId ? trip : t))
+      );
+      setSelectedTrip(trip);
+    },
+    onError: (_err, _vars, ctx) => {
+      queryClient.setQueryData(['trips'], ctx?.prev);
+      setSelectedTrip(null);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+  });
+
+  const addItemMutation = useMutation({
+    mutationFn: (vars: { tripId: string; name: string; quantity: number }) =>
+      fetch(`/api/trips/${vars.tripId}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: vars.name, quantity: vars.quantity }),
+      }).then((r) => r.json()),
+    onMutate: async (vars) => {
+      await queryClient.cancelQueries({ queryKey: ['trips'] });
+      const prev = queryClient.getQueryData<Trip[]>(['trips']);
+      const tempItem: Item = {
+        id: `temp-${Date.now()}`,
+        name: vars.name,
+        quantity: vars.quantity,
+        packed: false,
+        broughtBack: false,
+      };
+      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
+        old.map((t) => (t.id === vars.tripId ? { ...t, items: [...t.items, tempItem] } : t))
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => queryClient.setQueryData(['trips'], ctx?.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+  });
+
+  const togglePackedMutation = useMutation({
+    mutationFn: (vars: { tripId: string; item: Item }) =>
+      fetch(`/api/trips/${vars.tripId}/items/${vars.item.id}/packed`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packed: !vars.item.packed }),
+      }),
+    onMutate: async (vars) => {
+      await queryClient.cancelQueries({ queryKey: ['trips'] });
+      const prev = queryClient.getQueryData<Trip[]>(['trips']);
+      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
+        old.map((t) =>
+          t.id === vars.tripId
+            ? { ...t, items: t.items.map((i) => (i.id === vars.item.id ? { ...i, packed: !i.packed } : i)) }
+            : t
+        )
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => queryClient.setQueryData(['trips'], ctx?.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+  });
+
+  const toggleBroughtBackMutation = useMutation({
+    mutationFn: (vars: { tripId: string; item: Item }) =>
+      fetch(`/api/trips/${vars.tripId}/items/${vars.item.id}/brought-back`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ broughtBack: !vars.item.broughtBack }),
+      }),
+    onMutate: async (vars) => {
+      await queryClient.cancelQueries({ queryKey: ['trips'] });
+      const prev = queryClient.getQueryData<Trip[]>(['trips']);
+      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
+        old.map((t) =>
+          t.id === vars.tripId
+            ? { ...t, items: t.items.map((i) => (i.id === vars.item.id ? { ...i, broughtBack: !i.broughtBack } : i)) }
+            : t
+        )
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => queryClient.setQueryData(['trips'], ctx?.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+  });
+
+  // ─── Handlers ─────────────────────────────────────────────────────────────
+
+  const createTrip = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newTripName.trim()) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/trips', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newTripName, destination: newTripDestination || null }),
-      });
-      const trip = await res.json();
-      setTrips([trip, ...trips]);
-      setSelectedTrip({ ...trip, items: [] });
-      setNewTripName('');
-      setNewTripDestination('');
-    } finally {
-      setLoading(false);
-    }
+    createTripMutation.mutate(
+      { name: newTripName, destination: newTripDestination || null },
+      { onSuccess: () => { setNewTripName(''); setNewTripDestination(''); } }
+    );
   };
 
-  const addItem = async (e: React.FormEvent) => {
+  const addItem = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedTrip || !newItemName.trim()) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/trips/${selectedTrip.id}/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newItemName, quantity: newItemQuantity }),
-      });
-      const item = await res.json();
-      const updated = { ...selectedTrip, items: [...selectedTrip.items, item] };
-      setSelectedTrip(updated);
-      setTrips(trips.map((t) => (t.id === selectedTrip.id ? updated : t)));
-      setNewItemName('');
-      setNewItemQuantity(1);
-    } finally {
-      setLoading(false);
-    }
+    addItemMutation.mutate(
+      { tripId: selectedTrip.id, name: newItemName, quantity: newItemQuantity },
+      { onSuccess: () => { setNewItemName(''); setNewItemQuantity(1); } }
+    );
   };
 
-  const togglePacked = async (item: Item) => {
+  const togglePacked = (item: Item) => {
     if (!selectedTrip) return;
-    await fetch(`/api/trips/${selectedTrip.id}/items/${item.id}/packed`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packed: !item.packed }),
-    });
-    const updated = {
-      ...selectedTrip,
-      items: selectedTrip.items.map((i) =>
-        i.id === item.id ? { ...i, packed: !i.packed } : i
-      ),
-    };
-    setSelectedTrip(updated);
-    setTrips(trips.map((t) => (t.id === selectedTrip.id ? updated : t)));
+    togglePackedMutation.mutate({ tripId: selectedTrip.id, item });
   };
 
-  const toggleBroughtBack = async (item: Item) => {
+  const toggleBroughtBack = (item: Item) => {
     if (!selectedTrip) return;
-    await fetch(`/api/trips/${selectedTrip.id}/items/${item.id}/brought-back`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ broughtBack: !item.broughtBack }),
-    });
-    const updated = {
-      ...selectedTrip,
-      items: selectedTrip.items.map((i) =>
-        i.id === item.id ? { ...i, broughtBack: !i.broughtBack } : i
-      ),
-    };
-    setSelectedTrip(updated);
-    setTrips(trips.map((t) => (t.id === selectedTrip.id ? updated : t)));
+    toggleBroughtBackMutation.mutate({ tripId: selectedTrip.id, item });
   };
 
   const deleteTrip = async (trip: Trip) => {
     await fetch(`/api/trips/${trip.id}`, { method: 'DELETE' });
-    setTrips(trips.filter((t) => t.id !== trip.id));
     if (selectedTrip?.id === trip.id) setSelectedTrip(null);
+    queryClient.invalidateQueries({ queryKey: ['trips'] });
   };
 
   const deleteItem = async (item: Item) => {
     if (!selectedTrip) return;
     await fetch(`/api/trips/${selectedTrip.id}/items/${item.id}`, { method: 'DELETE' });
-    const updated = {
-      ...selectedTrip,
-      items: selectedTrip.items.filter((i) => i.id !== item.id),
-    };
-    setSelectedTrip(updated);
-    setTrips(trips.map((t) => (t.id === selectedTrip.id ? updated : t)));
+    queryClient.invalidateQueries({ queryKey: ['trips'] });
   };
 
   // ─── Trip list view ───────────────────────────────────────────────────────
@@ -157,7 +203,7 @@ export default function Home() {
           />
           <button
             type="submit"
-            disabled={loading}
+            disabled={createTripMutation.isPending}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-sm font-medium rounded-lg transition-colors"
           >
             + New Trip
@@ -210,7 +256,7 @@ export default function Home() {
     </svg>
   );
 
-  const TripDetail = selectedTrip && (
+  const TripDetail = currentTrip && (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 bg-white border-b border-gray-200">
@@ -222,9 +268,9 @@ export default function Home() {
             ←
           </button>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">{selectedTrip.name}</h2>
-            {selectedTrip.destination && (
-              <p className="text-sm text-gray-500">📍 {selectedTrip.destination}</p>
+            <h2 className="text-xl font-bold text-gray-900 leading-tight">{currentTrip.name}</h2>
+            {currentTrip.destination && (
+              <p className="text-sm text-gray-500">📍 {currentTrip.destination}</p>
             )}
           </div>
         </div>
@@ -251,12 +297,12 @@ export default function Home() {
 
       {/* Items list */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-2">
-        {selectedTrip.items.length === 0 ? (
+        {currentTrip.items.length === 0 ? (
           <p className="text-center text-gray-400 mt-16 text-sm">No items yet. Add one below!</p>
-        ) : tab === 'return' && selectedTrip.items.every((i) => !i.packed) ? (
+        ) : tab === 'return' && currentTrip.items.every((i) => !i.packed) ? (
           <p className="text-center text-gray-400 mt-16 text-sm">No packed items yet.</p>
         ) : (
-          (tab === 'return' ? selectedTrip.items.filter((i) => i.packed) : selectedTrip.items).map((item) => {
+          (tab === 'return' ? currentTrip.items.filter((i) => i.packed) : currentTrip.items).map((item) => {
             const checked = tab === 'packing' ? item.packed : item.broughtBack;
             const toggle = tab === 'packing' ? togglePacked : toggleBroughtBack;
             return (
@@ -331,7 +377,7 @@ export default function Home() {
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={addItemMutation.isPending}
               className="w-12 h-12 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-300 text-white text-2xl font-medium rounded-xl transition-colors flex items-center justify-center"
             >
               +
@@ -345,7 +391,7 @@ export default function Home() {
   // ─── Layout ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-screen bg-gray-100 flex overflow-hidden">
+    <div className="h-dvh bg-gray-100 flex overflow-hidden">
       {/* Sidebar — always visible on desktop, hidden on mobile when a trip is selected */}
       <aside
         className={`
