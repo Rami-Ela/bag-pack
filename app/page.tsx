@@ -34,8 +34,34 @@ export default function Home() {
 
   const currentTrip = trips.find((t) => t.id === selectedTrip?.id) ?? selectedTrip;
 
+  // ─── Optimistic helper ────────────────────────────────────────────────────
+  // Returns { onMutate, onError, onSettled } with snapshot/rollback/invalidate
+  // wired up. `updater` describes how the cache changes; optional `before` runs
+  // inside onMutate before the cache write (e.g. to sync local state).
+
+  function optimistic<V>(
+    queryKey: readonly unknown[],
+    updater: (trips: Trip[], vars: V) => Trip[],
+    before?: (vars: V) => void,
+  ) {
+    return {
+      onMutate: async (vars: V) => {
+        await queryClient.cancelQueries({ queryKey });
+        const prev = queryClient.getQueryData<Trip[]>(queryKey);
+        before?.(vars);
+        queryClient.setQueryData<Trip[]>(queryKey, (old = []) => updater(old, vars));
+        return { prev };
+      },
+      onError: (_e: unknown, _v: V, ctx?: { prev?: Trip[] }) => {
+        queryClient.setQueryData(queryKey, ctx?.prev);
+      },
+      onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    };
+  }
+
   // ─── Mutations ────────────────────────────────────────────────────────────
 
+  // createTrip is the one exception: it needs a tempId swap in onSuccess.
   const createTripMutation = useMutation({
     mutationFn: (vars: { name: string; destination: string | null }) =>
       fetch('/api/trips', {
@@ -72,23 +98,13 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: vars.name, quantity: vars.quantity }),
       }).then((r) => r.json()),
-    onMutate: async (vars) => {
-      await queryClient.cancelQueries({ queryKey: ['trips'] });
-      const prev = queryClient.getQueryData<Trip[]>(['trips']);
-      const tempItem: Item = {
-        id: `temp-${Date.now()}`,
-        name: vars.name,
-        quantity: vars.quantity,
-        packed: false,
-        broughtBack: false,
-      };
-      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
-        old.map((t) => (t.id === vars.tripId ? { ...t, items: [...t.items, tempItem] } : t))
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => queryClient.setQueryData(['trips'], ctx?.prev),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+    ...optimistic(['trips'], (trips, vars) =>
+      trips.map((t) =>
+        t.id === vars.tripId
+          ? { ...t, items: [...t.items, { id: `temp-${Date.now()}`, name: vars.name, quantity: vars.quantity, packed: false, broughtBack: false }] }
+          : t
+      )
+    ),
   });
 
   const togglePackedMutation = useMutation({
@@ -98,20 +114,13 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packed: !vars.item.packed }),
       }),
-    onMutate: async (vars) => {
-      await queryClient.cancelQueries({ queryKey: ['trips'] });
-      const prev = queryClient.getQueryData<Trip[]>(['trips']);
-      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
-        old.map((t) =>
-          t.id === vars.tripId
-            ? { ...t, items: t.items.map((i) => (i.id === vars.item.id ? { ...i, packed: !i.packed } : i)) }
-            : t
-        )
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => queryClient.setQueryData(['trips'], ctx?.prev),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+    ...optimistic(['trips'], (trips, { tripId, item }) =>
+      trips.map((t) =>
+        t.id === tripId
+          ? { ...t, items: t.items.map((i) => (i.id === item.id ? { ...i, packed: !i.packed } : i)) }
+          : t
+      )
+    ),
   });
 
   const toggleBroughtBackMutation = useMutation({
@@ -121,20 +130,32 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ broughtBack: !vars.item.broughtBack }),
       }),
-    onMutate: async (vars) => {
-      await queryClient.cancelQueries({ queryKey: ['trips'] });
-      const prev = queryClient.getQueryData<Trip[]>(['trips']);
-      queryClient.setQueryData<Trip[]>(['trips'], (old = []) =>
-        old.map((t) =>
-          t.id === vars.tripId
-            ? { ...t, items: t.items.map((i) => (i.id === vars.item.id ? { ...i, broughtBack: !i.broughtBack } : i)) }
-            : t
-        )
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => queryClient.setQueryData(['trips'], ctx?.prev),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
+    ...optimistic(['trips'], (trips, { tripId, item }) =>
+      trips.map((t) =>
+        t.id === tripId
+          ? { ...t, items: t.items.map((i) => (i.id === item.id ? { ...i, broughtBack: !i.broughtBack } : i)) }
+          : t
+      )
+    ),
+  });
+
+  const deleteTripMutation = useMutation({
+    mutationFn: (trip: Trip) => fetch(`/api/trips/${trip.id}`, { method: 'DELETE' }),
+    ...optimistic(
+      ['trips'],
+      (trips, trip) => trips.filter((t) => t.id !== trip.id),
+      (trip) => { if (selectedTrip?.id === trip.id) setSelectedTrip(null); },
+    ),
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: (vars: { tripId: string; item: Item }) =>
+      fetch(`/api/trips/${vars.tripId}/items/${vars.item.id}`, { method: 'DELETE' }),
+    ...optimistic(['trips'], (trips, { tripId, item }) =>
+      trips.map((t) =>
+        t.id === tripId ? { ...t, items: t.items.filter((i) => i.id !== item.id) } : t
+      )
+    ),
   });
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
@@ -167,16 +188,11 @@ export default function Home() {
     toggleBroughtBackMutation.mutate({ tripId: selectedTrip.id, item });
   };
 
-  const deleteTrip = async (trip: Trip) => {
-    await fetch(`/api/trips/${trip.id}`, { method: 'DELETE' });
-    if (selectedTrip?.id === trip.id) setSelectedTrip(null);
-    queryClient.invalidateQueries({ queryKey: ['trips'] });
-  };
+  const deleteTrip = (trip: Trip) => deleteTripMutation.mutate(trip);
 
-  const deleteItem = async (item: Item) => {
+  const deleteItem = (item: Item) => {
     if (!selectedTrip) return;
-    await fetch(`/api/trips/${selectedTrip.id}/items/${item.id}`, { method: 'DELETE' });
-    queryClient.invalidateQueries({ queryKey: ['trips'] });
+    deleteItemMutation.mutate({ tripId: selectedTrip.id, item });
   };
 
   // ─── Trip list view ───────────────────────────────────────────────────────
