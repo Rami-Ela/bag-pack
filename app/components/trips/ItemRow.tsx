@@ -18,9 +18,11 @@ export function ItemRow({ item, tab, onToggle, onDelete }: Props) {
   const displayName = presets[item.name] ?? item.name;
 
   return (
-    <div className="flex items-center gap-3 bg-white px-4 py-4 rounded-xl border border-gray-200">
-      <button
-        onClick={onToggle}
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center gap-3 bg-white px-4 py-4 rounded-xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors text-left"
+    >
+      <span
         className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
           checked
             ? tab === 'packing'
@@ -30,7 +32,7 @@ export function ItemRow({ item, tab, onToggle, onDelete }: Props) {
         }`}
       >
         {checked && <CheckIcon />}
-      </button>
+      </span>
 
       <span className={`flex-1 font-medium transition-colors ${checked ? 'text-gray-300 line-through' : 'text-gray-900'}`}>
         {displayName}
@@ -42,13 +44,14 @@ export function ItemRow({ item, tab, onToggle, onDelete }: Props) {
       </span>
 
       {tab === 'packing' && (
-        <button
-          onClick={onDelete}
+        <span
+          role="button"
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
           className="shrink-0 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-400 active:text-red-500 transition-colors"
         >
           ✕
-        </button>
+        </span>
       )}
-    </div>
+    </button>
   );
 }

@@ -23,7 +23,7 @@ export async function GET() {
     const trips = await prisma.trip.findMany({
       where: { userId: DEFAULT_USER_ID },
       include: {
-        items: { orderBy: { createdAt: 'asc' } },
+        items: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
           })),
         },
       },
-      include: { items: { orderBy: { createdAt: 'asc' } } },
+      include: { items: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] } },
     });
 
     return NextResponse.json(trip, { status: 201 });
