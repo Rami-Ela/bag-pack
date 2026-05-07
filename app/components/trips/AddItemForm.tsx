@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   onSubmit: (vars: { name: string; quantity: number }) => void;
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function AddItemForm({ onSubmit, isPending }: Props) {
+  const t = useTranslations('addItemForm');
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState(1);
 
@@ -25,7 +27,7 @@ export function AddItemForm({ onSubmit, isPending }: Props) {
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Add an item…"
+        placeholder={t('placeholder')}
         className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
         required
       />

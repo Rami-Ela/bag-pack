@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Trip } from '@/app/types/trips';
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export function TripCard({ trip, isSelected, onSelect, onDelete }: Props) {
+  const t = useTranslations('tripCard');
+
   return (
     <div
       className={`flex items-center gap-1 rounded-xl mb-2 border transition-colors ${
@@ -23,7 +26,9 @@ export function TripCard({ trip, isSelected, onSelect, onDelete }: Props) {
         {trip.destination && (
           <p className="text-sm text-gray-400 mt-0.5">📍 {trip.destination}</p>
         )}
-        <p className="text-sm text-gray-400 mt-0.5">{trip.items?.length ?? 0} items</p>
+        <p className="text-sm text-gray-400 mt-0.5">
+          {t('itemCount', { count: trip.items?.length ?? 0 })}
+        </p>
       </button>
       <button
         onClick={onDelete}

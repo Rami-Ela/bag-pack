@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { Trip } from '@/app/types/trips';
 import { useTripMutations } from '@/app/hooks/useTripMutations';
 import { TripSidebar } from '@/app/components/trips/TripSidebar';
 import { TripDetail } from '@/app/components/trips/TripDetail';
 
 export default function Home() {
+  const t = useTranslations('page');
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 
   const { data: trips = [] } = useQuery<Trip[]>({
@@ -64,7 +66,7 @@ export default function Home() {
           />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-400">
-            <p>Select a trip or create a new one</p>
+            <p>{t('emptyState')}</p>
           </div>
         )}
       </main>

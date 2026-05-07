@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Item, Trip } from "@/app/types/trips";
-import { ItemRow } from "./ItemRow";
-import { AddItemForm } from "./AddItemForm";
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Item, Trip } from '@/app/types/trips';
+import { ItemRow } from './ItemRow';
+import { AddItemForm } from './AddItemForm';
 
 interface Props {
   trip: Trip;
@@ -24,16 +25,15 @@ export function TripDetail({
   onToggleBroughtBack,
   onDeleteItem,
 }: Props) {
-  const [tab, setTab] = useState<"packing" | "return">("packing");
-
-  if (!trip.items) return null;
+  const t = useTranslations('tripDetail');
+  const [tab, setTab] = useState<'packing' | 'return'>('packing');
 
   const visibleItems =
-    tab === "return" ? trip.items.filter((i) => i.packed) : trip.items;
+    tab === 'return' ? trip.items.filter((i) => i.packed) : trip.items;
 
   const isEmpty =
     trip.items.length === 0 ||
-    (tab === "return" && trip.items.every((i) => !i.packed));
+    (tab === 'return' && trip.items.every((i) => !i.packed));
 
   return (
     <div className="flex flex-col h-full">
@@ -47,9 +47,7 @@ export function TripDetail({
             ←
           </button>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">
-              {trip.name}
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 leading-tight">{trip.name}</h2>
             {trip.destination && (
               <p className="text-sm text-gray-500">📍 {trip.destination}</p>
             )}
@@ -59,24 +57,20 @@ export function TripDetail({
         {/* Tabs */}
         <div className="flex bg-gray-100 rounded-xl p-1">
           <button
-            onClick={() => setTab("packing")}
+            onClick={() => setTab('packing')}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-              tab === "packing"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500"
+              tab === 'packing' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
             }`}
           >
-            🧳 Packing
+            {t('packingTab')}
           </button>
           <button
-            onClick={() => setTab("return")}
+            onClick={() => setTab('return')}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-              tab === "return"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500"
+              tab === 'return' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
             }`}
           >
-            🏠 Return
+            {t('returnTab')}
           </button>
         </div>
       </div>
@@ -85,9 +79,7 @@ export function TripDetail({
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-2">
         {isEmpty ? (
           <p className="text-center text-gray-400 mt-16 text-sm">
-            {trip.items.length === 0
-              ? "No items yet. Add one below!"
-              : "No packed items yet."}
+            {trip.items.length === 0 ? t('noItems') : t('noPackedItems')}
           </p>
         ) : (
           visibleItems.map((item) => (
@@ -95,11 +87,7 @@ export function TripDetail({
               key={item.id}
               item={item}
               tab={tab}
-              onToggle={() =>
-                tab === "packing"
-                  ? onTogglePacked(item)
-                  : onToggleBroughtBack(item)
-              }
+              onToggle={() => (tab === 'packing' ? onTogglePacked(item) : onToggleBroughtBack(item))}
               onDelete={() => onDeleteItem(item)}
             />
           ))
@@ -107,7 +95,7 @@ export function TripDetail({
       </div>
 
       {/* Add item form — packing tab only */}
-      {tab === "packing" && (
+      {tab === 'packing' && (
         <div className="p-4 bg-white border-t border-gray-200">
           <AddItemForm onSubmit={onAddItem} isPending={addItemPending} />
         </div>

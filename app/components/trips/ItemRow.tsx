@@ -1,5 +1,6 @@
 'use client';
 
+import { useMessages } from 'next-intl';
 import { Item } from '@/app/types/trips';
 import { CheckIcon } from './CheckIcon';
 
@@ -12,6 +13,9 @@ interface Props {
 
 export function ItemRow({ item, tab, onToggle, onDelete }: Props) {
   const checked = tab === 'packing' ? item.packed : item.broughtBack;
+  const messages = useMessages();
+  const presets = (messages?.presets ?? {}) as Record<string, string>;
+  const displayName = presets[item.name] ?? item.name;
 
   return (
     <div className="flex items-center gap-3 bg-white px-4 py-4 rounded-xl border border-gray-200">
@@ -29,7 +33,7 @@ export function ItemRow({ item, tab, onToggle, onDelete }: Props) {
       </button>
 
       <span className={`flex-1 font-medium transition-colors ${checked ? 'text-gray-300 line-through' : 'text-gray-900'}`}>
-        {item.name}
+        {displayName}
         {item.quantity > 1 && (
           <span className="ml-2 text-sm font-normal" style={{ textDecoration: 'none' }}>
             × {item.quantity}

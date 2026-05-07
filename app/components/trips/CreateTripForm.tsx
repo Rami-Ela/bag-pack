@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { TripType } from '@/app/types/trips';
 import { CreateTripVars } from '@/app/hooks/useTripMutations';
 import { TripTypePicker } from './TripTypePicker';
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function CreateTripForm({ onSubmit, isPending }: Props) {
+  const t = useTranslations('createTripForm');
   const [name, setName] = useState('');
   const [destination, setDestination] = useState('');
   const [tripType, setTripType] = useState<TripType>('OTHER');
@@ -40,7 +42,7 @@ export function CreateTripForm({ onSubmit, isPending }: Props) {
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Trip name"
+        placeholder={t('namePlaceholder')}
         className="w-full px-3 py-3 text-sm border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
         required
       />
@@ -48,7 +50,7 @@ export function CreateTripForm({ onSubmit, isPending }: Props) {
         type="text"
         value={destination}
         onChange={(e) => setDestination(e.target.value)}
-        placeholder="Destination (optional)"
+        placeholder={t('destinationPlaceholder')}
         className="w-full px-3 py-3 text-sm border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
       />
 
@@ -75,7 +77,7 @@ export function CreateTripForm({ onSubmit, isPending }: Props) {
         disabled={isPending}
         className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-sm font-medium rounded-lg transition-colors"
       >
-        + New Trip
+        {t('submit')}
       </button>
     </form>
   );

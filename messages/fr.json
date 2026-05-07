@@ -1,0 +1,89 @@
+{
+  "page": {
+    "emptyState": "Sélectionnez un voyage ou créez-en un nouveau"
+  },
+  "sidebar": {
+    "title": "🎒 Bag Pack",
+    "noTrips": "Aucun voyage pour l'instant"
+  },
+  "createTripForm": {
+    "namePlaceholder": "Nom du voyage",
+    "destinationPlaceholder": "Destination (optionnelle)",
+    "submit": "+ Nouveau voyage"
+  },
+  "tripTypes": {
+    "BEACH": "Plage",
+    "CITY": "Ville",
+    "BUSINESS": "Affaires",
+    "SKI": "Ski",
+    "HIKING": "Randonnée",
+    "OTHER": "Autre"
+  },
+  "tripCard": {
+    "itemCount": "{count, plural, =0 {Aucun article} =1 {1 article} other {# articles}}"
+  },
+  "tripDetail": {
+    "packingTab": "🧳 Préparation",
+    "returnTab": "🏠 Retour",
+    "noItems": "Aucun article pour l'instant. Ajoutez-en un ci-dessous !",
+    "noPackedItems": "Aucun article emballé pour l'instant."
+  },
+  "addItemForm": {
+    "placeholder": "Ajouter un article…"
+  },
+  "presets": {
+    "T-Shirt": "T-shirt",
+    "Shorts": "Short",
+    "Underwear": "Sous-vêtements",
+    "Swimsuit": "Maillot de bain",
+    "Flip flops": "Tongs",
+    "Sunscreen": "Crème solaire",
+    "Sunglasses": "Lunettes de soleil",
+    "Hat": "Chapeau",
+    "Beach towel": "Serviette de plage",
+    "Phone charger": "Chargeur téléphone",
+    "Toothbrush": "Brosse à dents",
+    "Passport": "Passeport",
+    "Socks": "Chaussettes",
+    "Jeans": "Jean",
+    "Jacket": "Veste",
+    "Sneakers": "Baskets",
+    "Dress shirt": "Chemise",
+    "Suit jacket": "Veste de costume",
+    "Dress pants": "Pantalon de costume",
+    "Tie": "Cravate",
+    "Dress shoes": "Chaussures de ville",
+    "Laptop": "Ordinateur portable",
+    "Laptop charger": "Chargeur PC",
+    "Business cards": "Cartes de visite",
+    "Ski socks": "Chaussettes de ski",
+    "Ski jacket": "Veste de ski",
+    "Ski pants": "Pantalon de ski",
+    "Thermal base layer": "Sous-couche thermique",
+    "Ski gloves": "Gants de ski",
+    "Ski goggles": "Lunettes de ski",
+    "Lip balm": "Baume à lèvres",
+    "Hiking socks": "Chaussettes de randonnée",
+    "Hiking pants": "Pantalon de randonnée",
+    "Rain jacket": "Veste de pluie",
+    "Hiking boots": "Chaussures de randonnée",
+    "Water bottle": "Gourde",
+    "Backpack": "Sac à dos",
+    "First aid kit": "Trousse de premiers secours",
+    "Headlamp": "Lampe frontale",
+    "Nail clipper": "Coupe-ongles",
+    "Splint": "Goutière",
+    "Camera": "Appareil photo",
+    "Computer": "Ordinateur",
+    "Switch": "Switch",
+    "Clothing Bundle": "Baluchon vêtement sale",
+    "Headphones": "Écouteurs",
+    "Sweater": "Pull",
+    "Pants": "Pantalon",
+    "Tickets": "Billets",
+    "Deodorant": "Déodorant",
+    "Towel": "Serviette",
+    "Book": "Livre",
+    "Athletic wear": "Vêtements de sport"
+  }
+}

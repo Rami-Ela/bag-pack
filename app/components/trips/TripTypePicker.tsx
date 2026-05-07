@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { TripType, TRIP_TYPES } from '@/app/types/trips';
 
 interface Props {
@@ -8,9 +9,11 @@ interface Props {
 }
 
 export function TripTypePicker({ value, onChange }: Props) {
+  const t = useTranslations('tripTypes');
+
   return (
     <div className="grid grid-cols-3 gap-1.5">
-      {TRIP_TYPES.map(({ value: v, label, emoji }) => (
+      {TRIP_TYPES.map(({ value: v, emoji }) => (
         <button
           key={v}
           type="button"
@@ -22,7 +25,7 @@ export function TripTypePicker({ value, onChange }: Props) {
           }`}
         >
           <span className="text-lg leading-none">{emoji}</span>
-          {label}
+          {t(v)}
         </button>
       ))}
     </div>
