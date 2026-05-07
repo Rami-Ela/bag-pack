@@ -33,6 +33,16 @@
   "addItemForm": {
     "placeholder": "Ajouter un élément…"
   },
+  "categories": {
+    "Clothing": "Vêtements",
+    "Footwear": "Chaussures",
+    "Toiletries": "Trousse de toilette",
+    "Electronics": "Électronique",
+    "Documents": "Documents",
+    "Accessories": "Accessoires",
+    "Gear": "Équipement",
+    "other": "Autre"
+  },
   "presets": {
     "T-Shirt": "T-shirt",
     "Shorts": "Short",

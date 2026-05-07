@@ -4,6 +4,7 @@ export interface Item {
   quantity: number;
   packed: boolean;
   broughtBack: boolean;
+  category?: { id: string; name: string } | null;
 }
 
 export type TripType = 'BEACH' | 'CITY' | 'BUSINESS' | 'SKI' | 'HIKING' | 'OTHER';

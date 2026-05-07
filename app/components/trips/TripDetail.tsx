@@ -1,10 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useMessages, useTranslations } from 'next-intl';
 import { Item, Trip } from '@/app/types/trips';
 import { ItemRow } from './ItemRow';
 import { AddItemForm } from './AddItemForm';
+
+function groupByCategory(items: Item[]): { label: string | null; items: Item[] }[] {
+  const groups: { label: string | null; items: Item[] }[] = [];
+  const seen = new Map<string | null, Item[]>();
+  for (const item of items) {
+    const key = item.category?.name ?? null;
+    if (!seen.has(key)) {
+      const bucket: Item[] = [];
+      seen.set(key, bucket);
+      groups.push({ label: key, items: bucket });
+    }
+    seen.get(key)!.push(item);
+  }
+  // Uncategorized items sink to the bottom
+  const nullIdx = groups.findIndex((g) => g.label === null);
+  if (nullIdx > 0) groups.push(groups.splice(nullIdx, 1)[0]);
+  return groups;
+}
 
 interface Props {
   trip: Trip;
@@ -26,6 +44,8 @@ export function TripDetail({
   onDeleteItem,
 }: Props) {
   const t = useTranslations('tripDetail');
+  const messages = useMessages();
+  const categoryTranslations = (messages?.categories ?? {}) as Record<string, string>;
   const [tab, setTab] = useState<'packing' | 'return'>('packing');
 
   const visibleItems =
@@ -76,20 +96,29 @@ export function TripDetail({
       </div>
 
       {/* Items list */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
         {isEmpty ? (
           <p className="text-center text-gray-400 mt-16 text-sm">
             {trip.items.length === 0 ? t('noItems') : t('noPackedItems')}
           </p>
         ) : (
-          visibleItems.map((item) => (
-            <ItemRow
-              key={item.id}
-              item={item}
-              tab={tab}
-              onToggle={() => (tab === 'packing' ? onTogglePacked(item) : onToggleBroughtBack(item))}
-              onDelete={() => onDeleteItem(item)}
-            />
+          groupByCategory(visibleItems).map(({ label, items }) => (
+            <div key={label ?? '__uncategorized__'}>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">
+                {label ? (categoryTranslations[label] ?? label) : (categoryTranslations['other'] ?? 'Autre')}
+              </h3>
+              <div className="space-y-2">
+                {items.map((item) => (
+                  <ItemRow
+                    key={item.id}
+                    item={item}
+                    tab={tab}
+                    onToggle={() => (tab === 'packing' ? onTogglePacked(item) : onToggleBroughtBack(item))}
+                    onDelete={() => onDeleteItem(item)}
+                  />
+                ))}
+              </div>
+            </div>
           ))
         )}
       </div>

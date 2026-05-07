@@ -23,7 +23,10 @@ export async function GET() {
     const trips = await prisma.trip.findMany({
       where: { userId: DEFAULT_USER_ID },
       include: {
-        items: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+        items: {
+          include: { category: { select: { id: true, name: true } } },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -55,6 +58,17 @@ export async function POST(req: NextRequest) {
     const presets = await prisma.tripPreset.findMany({ where: { tripType: resolvedTripType } });
     const duration = tripDurationDays(startDate ?? null, endDate ?? null);
 
+    // Upsert an ItemCategory for each unique preset category name
+    const uniqueCategoryNames = [...new Set(presets.map((p) => p.category).filter(Boolean))];
+    const categoryMap = new Map<string, string>();
+    for (const catName of uniqueCategoryNames) {
+      let cat = await prisma.itemCategory.findFirst({ where: { userId: DEFAULT_USER_ID, name: catName } });
+      if (!cat) {
+        cat = await prisma.itemCategory.create({ data: { userId: DEFAULT_USER_ID, name: catName } });
+      }
+      categoryMap.set(catName, cat.id);
+    }
+
     const trip = await prisma.trip.create({
       data: {
         userId: DEFAULT_USER_ID,
@@ -66,11 +80,17 @@ export async function POST(req: NextRequest) {
         items: {
           create: presets.map((p) => ({
             name: p.name,
+            categoryId: p.category ? categoryMap.get(p.category) : undefined,
             quantity: p.perDay ? p.baseQuantity * duration : p.baseQuantity,
           })),
         },
       },
-      include: { items: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] } },
+      include: {
+        items: {
+          include: { category: { select: { id: true, name: true } } },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
+      },
     });
 
     return NextResponse.json(trip, { status: 201 });
