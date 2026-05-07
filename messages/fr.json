@@ -9,6 +9,8 @@
   "createTripForm": {
     "namePlaceholder": "Nom du voyage",
     "destinationPlaceholder": "Destination (optionnelle)",
+    "startDate": "Départ",
+    "endDate": "Arrivée",
     "submit": "+ Nouveau voyage"
   },
   "tripTypes": {
@@ -20,16 +22,16 @@
     "OTHER": "Autre"
   },
   "tripCard": {
-    "itemCount": "{count, plural, =0 {Aucun article} =1 {1 article} other {# articles}}"
+    "itemCount": "{count, plural, =0 {Aucun élément} =1 {1 élément} other {# éléments}}"
   },
   "tripDetail": {
     "packingTab": "🧳 Préparation",
     "returnTab": "🏠 Retour",
-    "noItems": "Aucun article pour l'instant. Ajoutez-en un ci-dessous !",
-    "noPackedItems": "Aucun article emballé pour l'instant."
+    "noItems": "Aucun élément pour l'instant. Ajoutez-en un ci-dessous !",
+    "noPackedItems": "Aucun élément emballé pour l'instant."
   },
   "addItemForm": {
-    "placeholder": "Ajouter un article…"
+    "placeholder": "Ajouter un élément…"
   },
   "presets": {
     "T-Shirt": "T-shirt",
