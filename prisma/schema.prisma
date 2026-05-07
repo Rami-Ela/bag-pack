@@ -10,6 +10,15 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TripType {
+  BEACH
+  CITY
+  BUSINESS
+  SKI
+  HIKING
+  OTHER
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -30,6 +39,7 @@ model Trip {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
   destination String?
+  tripType    TripType  @default(OTHER)
   startDate   DateTime?
   endDate     DateTime?
   createdAt   DateTime  @default(now())
@@ -80,8 +90,8 @@ model PackingListItem {
   id          String        @id @default(cuid())
   tripId      String
   trip        Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  categoryId  String
-  category    ItemCategory  @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  category    ItemCategory? @relation(fields: [categoryId], references: [id])
   templateId  String?
   template    ItemTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   name        String
@@ -96,4 +106,19 @@ model PackingListItem {
   @@index([categoryId])
   @@index([templateId])
   @@map("packing_list_items")
+}
+
+// System-level item suggestions per trip type.
+// perDay=true  → quantity = baseQuantity × trip duration in days
+// perDay=false → quantity = baseQuantity (fixed regardless of duration)
+model TripPreset {
+  id           String   @id @default(cuid())
+  tripType     TripType
+  name         String
+  category     String
+  perDay       Boolean  @default(false)
+  baseQuantity Int      @default(1)
+
+  @@index([tripType])
+  @@map("trip_presets")
 }

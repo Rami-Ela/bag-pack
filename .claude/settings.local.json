@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(npm install *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npx prisma *)",
+      "Bash(pg_isready -h localhost -p 51214)",
+      "Bash(pg_isready -h localhost -p 5433)"
     ]
   }
 }

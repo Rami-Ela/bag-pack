@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bag_pack
+    ports:
+      - "5433:5432"
+    volumes:
+      - bag_pack_db:/var/lib/postgresql
+
+volumes:
+  bag_pack_db:
