@@ -26,6 +26,18 @@ export function TripCard({ trip, isSelected, onSelect, onDelete }: Props) {
         {trip.destination && (
           <p className="text-sm text-gray-400 mt-0.5">📍 {trip.destination}</p>
         )}
+        {(trip.startDate || trip.endDate) && (
+          <p className="text-sm text-gray-400 mt-0.5">
+            🗓️{' '}
+            {trip.startDate
+              ? new Date(trip.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+              : ''}
+            {trip.startDate && trip.endDate && ' → '}
+            {trip.endDate
+              ? new Date(trip.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+              : ''}
+          </p>
+        )}
         <p className="text-sm text-gray-400 mt-0.5">
           {t('itemCount', { count: trip.items?.length ?? 0 })}
         </p>

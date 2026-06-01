@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { tripId } = await params;
-    const { name, quantity, notes } = await req.json();
+    const { name, quantity, notes, categoryId } = await req.json();
 
     if (!name) {
       return NextResponse.json({ error: 'name is required' }, { status: 400 });
@@ -24,7 +24,9 @@ export async function POST(
         name,
         quantity: quantity || 1,
         notes: notes || null,
+        categoryId: categoryId || null,
       },
+      include: { category: { select: { id: true, name: true } } },
     });
 
     return NextResponse.json(item, { status: 201 });

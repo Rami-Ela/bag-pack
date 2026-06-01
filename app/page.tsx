@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Trip } from '@/app/types/trips';
+import { Category, Trip } from '@/app/types/trips';
 import { useTripMutations } from '@/app/hooks/useTripMutations';
 import { TripSidebar } from '@/app/components/trips/TripSidebar';
 import { TripDetail } from '@/app/components/trips/TripDetail';
@@ -18,6 +18,11 @@ export default function Home() {
     select: (data) => data.map((t) => ({ ...t, items: t.items ?? [] })),
   });
 
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ['categories'],
+    queryFn: () => fetch('/api/categories').then((r) => r.json()),
+  });
+
   const {
     createTripMutation,
     addItemMutation,
@@ -25,6 +30,7 @@ export default function Home() {
     toggleBroughtBackMutation,
     deleteTripMutation,
     deleteItemMutation,
+    updateQuantityMutation,
   } = useTripMutations(setSelectedTrip, selectedTrip?.id);
 
   const currentTrip = trips.find((t) => t.id === selectedTrip?.id) ?? selectedTrip;
@@ -53,9 +59,10 @@ export default function Home() {
         {currentTrip ? (
           <TripDetail
             trip={currentTrip}
+            categories={categories}
             onBack={() => setSelectedTrip(null)}
-            onAddItem={({ name, quantity }) =>
-              addItemMutation.mutate({ tripId: currentTrip.id, name, quantity })
+            onAddItem={({ name, quantity, categoryId }) =>
+              addItemMutation.mutate({ tripId: currentTrip.id, name, quantity, categoryId })
             }
             addItemPending={addItemMutation.isPending}
             onTogglePacked={(item) => togglePackedMutation.mutate({ tripId: currentTrip.id, item })}
@@ -63,6 +70,9 @@ export default function Home() {
               toggleBroughtBackMutation.mutate({ tripId: currentTrip.id, item })
             }
             onDeleteItem={(item) => deleteItemMutation.mutate({ tripId: currentTrip.id, item })}
+            onUpdateQuantity={(item, quantity) =>
+              updateQuantityMutation.mutate({ tripId: currentTrip.id, item, quantity })
+            }
           />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-400">

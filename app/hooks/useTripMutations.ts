@@ -69,11 +69,11 @@ export function useTripMutations(
   });
 
   const addItemMutation = useMutation({
-    mutationFn: (vars: { tripId: string; name: string; quantity: number }) =>
+    mutationFn: (vars: { tripId: string; name: string; quantity: number; categoryId: string | null }) =>
       fetch(`/api/trips/${vars.tripId}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: vars.name, quantity: vars.quantity }),
+        body: JSON.stringify({ name: vars.name, quantity: vars.quantity, categoryId: vars.categoryId }),
       }).then((r) => r.json()),
     ...optimistic(TRIPS_KEY, (trips, vars) =>
       trips.map((t) =>
@@ -141,6 +141,22 @@ export function useTripMutations(
     ),
   });
 
+  const updateQuantityMutation = useMutation({
+    mutationFn: (vars: { tripId: string; item: Item; quantity: number }) =>
+      fetch(`/api/trips/${vars.tripId}/items/${vars.item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: vars.quantity }),
+      }).then((r) => r.json()),
+    ...optimistic(TRIPS_KEY, (trips, { tripId, item, quantity }) =>
+      trips.map((t) =>
+        t.id === tripId
+          ? { ...t, items: t.items.map((i) => (i.id === item.id ? { ...i, quantity } : i)) }
+          : t
+      )
+    ),
+  });
+
   return {
     createTripMutation,
     addItemMutation,
@@ -148,5 +164,6 @@ export function useTripMutations(
     toggleBroughtBackMutation,
     deleteTripMutation,
     deleteItemMutation,
+    updateQuantityMutation,
   };
 }

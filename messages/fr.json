@@ -31,7 +31,8 @@
     "noPackedItems": "Aucun élément emballé pour l'instant."
   },
   "addItemForm": {
-    "placeholder": "Ajouter un élément…"
+    "placeholder": "Ajouter un élément…",
+    "categoryPlaceholder": "Catégorie"
   },
   "categories": {
     "Clothing": "Vêtements",

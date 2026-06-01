@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useMessages, useTranslations } from 'next-intl';
-import { Item, Trip } from '@/app/types/trips';
+import { Category, Item, Trip } from '@/app/types/trips';
 import { ItemRow } from './ItemRow';
 import { AddItemForm } from './AddItemForm';
 
@@ -26,22 +26,26 @@ function groupByCategory(items: Item[]): { label: string | null; items: Item[] }
 
 interface Props {
   trip: Trip;
+  categories: Category[];
   onBack: () => void;
-  onAddItem: (vars: { name: string; quantity: number }) => void;
+  onAddItem: (vars: { name: string; quantity: number; categoryId: string | null }) => void;
   addItemPending: boolean;
   onTogglePacked: (item: Item) => void;
   onToggleBroughtBack: (item: Item) => void;
   onDeleteItem: (item: Item) => void;
+  onUpdateQuantity: (item: Item, quantity: number) => void;
 }
 
 export function TripDetail({
   trip,
+  categories,
   onBack,
   onAddItem,
   addItemPending,
   onTogglePacked,
   onToggleBroughtBack,
   onDeleteItem,
+  onUpdateQuantity,
 }: Props) {
   const t = useTranslations('tripDetail');
   const messages = useMessages();
@@ -115,6 +119,7 @@ export function TripDetail({
                     tab={tab}
                     onToggle={() => (tab === 'packing' ? onTogglePacked(item) : onToggleBroughtBack(item))}
                     onDelete={() => onDeleteItem(item)}
+                    onUpdateQuantity={(qty) => onUpdateQuantity(item, qty)}
                   />
                 ))}
               </div>
@@ -126,7 +131,7 @@ export function TripDetail({
       {/* Add item form — packing tab only */}
       {tab === 'packing' && (
         <div className="p-4 bg-white border-t border-gray-200">
-          <AddItemForm onSubmit={onAddItem} isPending={addItemPending} />
+          <AddItemForm categories={categories} onSubmit={onAddItem} isPending={addItemPending} />
         </div>
       )}
     </div>

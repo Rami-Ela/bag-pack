@@ -1,3 +1,9 @@
+export interface Category {
+  id: string;
+  name: string;
+  color: string | null;
+}
+
 export interface Item {
   id: string;
   name: string;
