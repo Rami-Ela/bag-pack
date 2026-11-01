@@ -1,5 +1,7 @@
 # Bag Pack API
 
+All endpoints require an authenticated session (httpOnly `session` cookie set on login/signup). Requests without a valid session get `401`; resources owned by another user return `404`.
+
 ## Endpoints
 
 ### Trips
@@ -12,7 +14,6 @@ POST /api/trips
 **Request body:**
 ```json
 {
-  "userId": "string (required)",
   "name": "string (required)",
   "destination": "string (optional)",
   "startDate": "ISO 8601 date (optional)",
@@ -34,7 +35,6 @@ POST /api/items
 **Request body:**
 ```json
 {
-  "userId": "string (required)",
   "categoryId": "string (required)",
   "name": "string (required)",
   "quantity": "number (optional, default: 1)",

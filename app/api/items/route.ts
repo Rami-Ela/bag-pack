@@ -1,14 +1,29 @@
-import { prisma } from '@/lib/prisma';
-import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/auth/session";
+import { unauthorized } from "@/lib/auth/api";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, categoryId, name, quantity, notes } = await req.json();
+    const userId = await getCurrentUserId();
+    if (!userId) return unauthorized();
 
-    if (!userId || !categoryId || !name) {
+    const { categoryId, name, quantity, notes } = await req.json();
+
+    if (!categoryId || !name) {
       return NextResponse.json(
-        { error: 'userId, categoryId, and name are required' },
-        { status: 400 }
+        { error: "categoryId and name are required" },
+        { status: 400 },
+      );
+    }
+
+    const category = await prisma.itemCategory.findFirst({
+      where: { id: categoryId, userId },
+    });
+    if (!category) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 },
       );
     }
 
@@ -27,10 +42,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(template, { status: 201 });
   } catch (error) {
-    console.error('Error creating item template:', error);
+    console.error("Error creating item template:", error);
     return NextResponse.json(
-      { error: 'Failed to create item template' },
-      { status: 500 }
+      { error: "Failed to create item template" },
+      { status: 500 },
     );
   }
 }

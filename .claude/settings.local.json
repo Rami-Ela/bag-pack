@@ -7,7 +7,9 @@
       "Bash(pg_isready -h localhost -p 51214)",
       "Bash(pg_isready -h localhost -p 5433)",
       "Bash(curl -s http://localhost:3000)",
-      "Bash(npx shadcn *)"
+      "Bash(npx shadcn *)",
+      "Bash(docker compose *)",
+      "Bash(node *)"
     ]
   }
 }

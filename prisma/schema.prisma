@@ -20,17 +20,31 @@ enum TripType {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   trips          Trip[]
   itemCategories ItemCategory[]
   itemTemplates  ItemTemplate[]
+  sessions       Session[]
 
   @@map("users")
+}
+
+// The cookie holds a random token; only its SHA-256 is stored, so a DB leak does not leak live sessions.
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("sessions")
 }
 
 model Trip {
