@@ -5,7 +5,8 @@
   "sidebar": {
     "title": "🎒 Bag Pack",
     "account": "Mon compte",
-    "noTrips": "Aucun voyage pour l'instant"
+    "noTrips": "Aucun voyage pour l'instant",
+    "templates": "Modèles"
   },
   "auth": {
     "namePlaceholder": "Nom (optionnel)",
@@ -46,13 +47,31 @@
     "endDate": "Arrivée",
     "submit": "+ Nouveau voyage"
   },
-  "tripTypes": {
-    "BEACH": "Plage",
-    "CITY": "Ville",
-    "BUSINESS": "Affaires",
-    "SKI": "Ski",
-    "HIKING": "Randonnée",
-    "OTHER": "Autre"
+  "templatePicker": {
+    "empty": "Aucun modèle : créez-en un pour préremplir vos voyages"
+  },
+  "templates": {
+    "title": "Mes modèles",
+    "back": "Retour",
+    "create": "+ Nouveau modèle",
+    "empty": "Aucun modèle pour l'instant.",
+    "itemCount": "{count, plural, =0 {Aucun objet} =1 {1 objet} other {# objets}}",
+    "createTitle": "Nouveau modèle",
+    "editTitle": "Modifier le modèle",
+    "cancel": "Annuler",
+    "namePlaceholder": "Nom du modèle",
+    "logo": "Logo",
+    "items": "Objets",
+    "itemPlaceholder": "Nom de l'objet",
+    "removeItem": "Retirer l'objet",
+    "noCategory": "Sans catégorie",
+    "quantity": "Quantité",
+    "perDay": "/ jour",
+    "addItem": "+ Ajouter un objet",
+    "save": "Enregistrer",
+    "delete": "Supprimer le modèle",
+    "confirmDelete": "Supprimer le modèle « {name} » ? Les voyages déjà créés ne sont pas modifiés.",
+    "saveError": "L'enregistrement a échoué, réessayez."
   },
   "tripCard": {
     "itemCount": "{count, plural, =0 {Aucun élément} =1 {1 élément} other {# éléments}}"

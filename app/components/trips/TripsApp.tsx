@@ -3,18 +3,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Category, Trip } from "@/app/types/trips";
+import { Category, Template, Trip } from "@/app/types/trips";
 import { useTripMutations } from "@/app/hooks/useTripMutations";
 import { TripSidebar } from "@/app/components/trips/TripSidebar";
 import { TripDetail } from "@/app/components/trips/TripDetail";
-
-async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  // Session expired or revoked: full reload drops the cached data of the previous user.
-  if (res.status === 401) window.location.assign("/login");
-  if (!res.ok) throw new Error(`GET ${url} failed with ${res.status}`);
-  return res.json();
-}
+import { fetchJson } from "@/lib/fetch-json";
 
 export function TripsApp() {
   const t = useTranslations("page");
@@ -29,6 +22,11 @@ export function TripsApp() {
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: () => fetchJson<Category[]>("/api/categories"),
+  });
+
+  const { data: templates = [] } = useQuery<Template[]>({
+    queryKey: ["templates"],
+    queryFn: () => fetchJson<Template[]>("/api/templates"),
   });
 
   const {
@@ -54,6 +52,7 @@ export function TripsApp() {
       >
         <TripSidebar
           trips={trips}
+          templates={templates}
           selectedTripId={selectedTrip?.id}
           onSelectTrip={setSelectedTrip}
           onCreateTrip={(vars) => createTripMutation.mutate(vars)}

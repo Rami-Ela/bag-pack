@@ -1,10 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { TripType } from "@/app/generated/prisma/client";
 import { getCurrentUserId } from "@/lib/auth/session";
 import { unauthorized } from "@/lib/auth/api";
 import { NextRequest, NextResponse } from "next/server";
-
-const VALID_TRIP_TYPES = new Set<string>(Object.values(TripType));
 
 function tripDurationDays(
   startDate: string | null,
@@ -46,53 +43,40 @@ export async function POST(req: NextRequest) {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorized();
 
-    const { name, destination, tripType, startDate, endDate } =
+    const { name, destination, templateId, startDate, endDate } =
       await req.json();
 
     if (!name) {
       return NextResponse.json({ error: "name is required" }, { status: 400 });
     }
 
-    const resolvedTripType: TripType =
-      tripType && VALID_TRIP_TYPES.has(tripType)
-        ? (tripType as TripType)
-        : TripType.OTHER;
-
-    const presets = await prisma.tripPreset.findMany({
-      where: { tripType: resolvedTripType },
-    });
-    const duration = tripDurationDays(startDate ?? null, endDate ?? null);
-
-    // Upsert an ItemCategory for each unique preset category name
-    const uniqueCategoryNames = [
-      ...new Set(presets.map((p) => p.category).filter(Boolean)),
-    ];
-    const categoryMap = new Map<string, string>();
-    for (const catName of uniqueCategoryNames) {
-      let cat = await prisma.itemCategory.findFirst({
-        where: { userId, name: catName },
-      });
-      if (!cat) {
-        cat = await prisma.itemCategory.create({
-          data: { userId, name: catName },
-        });
-      }
-      categoryMap.set(catName, cat.id);
+    // No template means an empty trip; the template's items are copied, not linked.
+    const template = templateId
+      ? await prisma.tripTemplate.findFirst({
+          where: { id: templateId, userId },
+          include: { items: { orderBy: { position: "asc" } } },
+        })
+      : null;
+    if (templateId && !template) {
+      return NextResponse.json(
+        { error: "Template not found" },
+        { status: 404 },
+      );
     }
+    const duration = tripDurationDays(startDate ?? null, endDate ?? null);
 
     const trip = await prisma.trip.create({
       data: {
         userId,
         name,
         destination: destination || null,
-        tripType: resolvedTripType,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         items: {
-          create: presets.map((p) => ({
-            name: p.name,
-            categoryId: p.category ? categoryMap.get(p.category) : undefined,
-            quantity: p.perDay ? p.baseQuantity * duration : p.baseQuantity,
+          create: (template?.items ?? []).map((item) => ({
+            name: item.name,
+            categoryId: item.categoryId,
+            quantity: item.perDay ? item.quantity * duration : item.quantity,
           })),
         },
       },

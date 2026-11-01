@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { TripType } from "@/app/types/trips";
+import { Template } from "@/app/types/trips";
 import { CreateTripVars } from "@/app/hooks/useTripMutations";
-import { TripTypePicker } from "./TripTypePicker";
+import { TemplatePicker } from "./TemplatePicker";
 import { DatePicker } from "@/app/components/ui/date-picker";
 
 interface Props {
+  templates: Template[];
   onSubmit: (vars: CreateTripVars) => void;
   isPending: boolean;
 }
 
-export function CreateTripForm({ onSubmit, isPending }: Props) {
+export function CreateTripForm({ templates, onSubmit, isPending }: Props) {
   const t = useTranslations("createTripForm");
   const [name, setName] = useState("");
   const [destination, setDestination] = useState("");
-  const [tripType, setTripType] = useState<TripType>("OTHER");
+  const [templateId, setTemplateId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -26,13 +27,13 @@ export function CreateTripForm({ onSubmit, isPending }: Props) {
     onSubmit({
       name,
       destination: destination || null,
-      tripType,
+      templateId,
       startDate: startDate || null,
       endDate: endDate || null,
     });
     setName("");
     setDestination("");
-    setTripType("OTHER");
+    setTemplateId(null);
     setStartDate("");
     setEndDate("");
   };
@@ -55,7 +56,11 @@ export function CreateTripForm({ onSubmit, isPending }: Props) {
         className="w-full px-3 py-3 text-sm border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
       />
 
-      <TripTypePicker value={tripType} onChange={setTripType} />
+      <TemplatePicker
+        templates={templates}
+        value={templateId}
+        onChange={setTemplateId}
+      />
 
       <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2">

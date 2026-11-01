@@ -16,12 +16,58 @@ POST /api/trips
 {
   "name": "string (required)",
   "destination": "string (optional)",
+  "templateId": "string (optional, items of this trip template are copied; omitted = empty trip)",
   "startDate": "ISO 8601 date (optional)",
   "endDate": "ISO 8601 date (optional)"
 }
 ```
 
 **Response:** Created trip object
+
+---
+
+### Trip Templates
+
+User-defined packing lists used to prefill a new trip. Items with `perDay: true` get
+`quantity x trip duration in days` when copied into a trip (7 days when dates are omitted).
+
+#### List templates
+```
+GET /api/templates
+```
+
+#### Create a template
+```
+POST /api/templates
+```
+
+#### Replace a template (name, emoji and the whole item list)
+```
+PUT /api/templates/[templateId]
+```
+
+**Request body (POST and PUT):**
+```json
+{
+  "name": "string (required)",
+  "emoji": "string (required, one of lib/templates/emojis.ts)",
+  "items": [
+    {
+      "name": "string (required)",
+      "categoryId": "string | null",
+      "quantity": "integer >= 1 (required)",
+      "perDay": "boolean (default: false)"
+    }
+  ]
+}
+```
+
+#### Delete a template
+```
+DELETE /api/templates/[templateId]
+```
+
+Existing trips are not affected: their items were copied at creation.
 
 ---
 

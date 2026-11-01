@@ -10,15 +10,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum TripType {
-  BEACH
-  CITY
-  BUSINESS
-  SKI
-  HIKING
-  OTHER
-}
-
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -30,6 +21,7 @@ model User {
   trips          Trip[]
   itemCategories ItemCategory[]
   itemTemplates  ItemTemplate[]
+  tripTemplates  TripTemplate[]
   sessions       Session[]
 
   @@map("users")
@@ -53,7 +45,6 @@ model Trip {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
   destination String?
-  tripType    TripType  @default(OTHER)
   startDate   DateTime?
   endDate     DateTime?
   createdAt   DateTime  @default(now())
@@ -74,8 +65,9 @@ model ItemCategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items     PackingListItem[]
-  templates ItemTemplate[]
+  items         PackingListItem[]
+  templates     ItemTemplate[]
+  templateItems TripTemplateItem[]
 
   @@index([userId])
   @@map("item_categories")
@@ -122,17 +114,37 @@ model PackingListItem {
   @@map("packing_list_items")
 }
 
-// System-level item suggestions per trip type.
-// perDay=true  → quantity = baseQuantity × trip duration in days
-// perDay=false → quantity = baseQuantity (fixed regardless of duration)
-model TripPreset {
-  id           String   @id @default(cuid())
-  tripType     TripType
-  name         String
-  category     String
-  perDay       Boolean  @default(false)
-  baseQuantity Int      @default(1)
+// User-defined packing list used to prefill a new trip. Items are copied into the trip
+// at creation, so editing a template never alters existing trips.
+model TripTemplate {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  emoji     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([tripType])
-  @@map("trip_presets")
+  items TripTemplateItem[]
+
+  @@index([userId])
+  @@map("trip_templates")
+}
+
+// perDay=true  -> trip quantity = quantity x trip duration in days
+// perDay=false -> trip quantity = quantity (fixed regardless of duration)
+model TripTemplateItem {
+  id         String        @id @default(cuid())
+  templateId String
+  template   TripTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   ItemCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name       String
+  quantity   Int           @default(1)
+  perDay     Boolean       @default(false)
+  position   Int
+
+  @@index([templateId])
+  @@index([categoryId])
+  @@map("trip_template_items")
 }

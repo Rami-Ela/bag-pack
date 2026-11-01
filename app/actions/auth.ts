@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password-rules";
+import { createDefaultTemplates } from "@/lib/templates/create-defaults";
 import {
   createSession,
   deleteSession,
@@ -54,6 +55,7 @@ export async function signup(
   const user = await prisma.user.create({
     data: { email, name, passwordHash: await hashPassword(password) },
   });
+  await createDefaultTemplates(user.id);
 
   await createSession(user.id);
   redirect("/");

@@ -1,14 +1,14 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Item, Trip, TripType } from '@/app/types/trips';
+import { Item, Trip } from '@/app/types/trips';
 
 const TRIPS_KEY = ['trips'] as const;
 
 export type CreateTripVars = {
   name: string;
   destination: string | null;
-  tripType: TripType;
+  templateId: string | null;
   startDate: string | null;
   endDate: string | null;
 };

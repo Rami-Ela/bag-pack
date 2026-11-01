@@ -1,4 +1,4 @@
-.PHONY: install start stop dev build db-start db-stop db-delete db-reset migrate seed studio
+.PHONY: install start stop dev build db-start db-stop db-delete db-reset migrate studio
 
 install:
 	npm install
@@ -21,13 +21,10 @@ db-stop:
 db-delete:
 	docker compose down -v
 
-db-reset: db-delete db-start migrate seed
+db-reset: db-delete db-start migrate
 
 migrate:
 	npm run prisma:migrate
-
-seed:
-	npm run prisma:seed
 
 studio:
 	npm run prisma:studio

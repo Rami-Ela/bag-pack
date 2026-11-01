@@ -13,22 +13,25 @@ export interface Item {
   category?: { id: string; name: string } | null;
 }
 
-export type TripType = 'BEACH' | 'CITY' | 'BUSINESS' | 'SKI' | 'HIKING' | 'OTHER';
+export interface TemplateItem {
+  id?: string;
+  name: string;
+  categoryId: string | null;
+  quantity: number;
+  perDay: boolean;
+}
 
-export const TRIP_TYPES: { value: TripType; label: string; emoji: string }[] = [
-  { value: 'BEACH',    label: 'Beach',    emoji: '🏖️' },
-  { value: 'CITY',     label: 'City',     emoji: '🏙️' },
-  { value: 'BUSINESS', label: 'Business', emoji: '💼' },
-  { value: 'SKI',      label: 'Ski',      emoji: '🎿' },
-  { value: 'HIKING',   label: 'Hiking',   emoji: '🥾' },
-  { value: 'OTHER',    label: 'Other',    emoji: '📦' },
-];
+export interface Template {
+  id: string;
+  name: string;
+  emoji: string;
+  items: TemplateItem[];
+}
 
 export interface Trip {
   id: string;
   name: string;
   destination: string | null;
-  tripType: TripType;
   startDate: string | null;
   endDate: string | null;
   items: Item[];

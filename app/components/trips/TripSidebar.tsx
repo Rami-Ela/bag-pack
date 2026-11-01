@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Trip } from "@/app/types/trips";
+import { Template, Trip } from "@/app/types/trips";
 import { CreateTripVars } from "@/app/hooks/useTripMutations";
 import { CreateTripForm } from "./CreateTripForm";
 import { TripCard } from "./TripCard";
 
 interface Props {
   trips: Trip[];
+  templates: Template[];
   selectedTripId: string | null | undefined;
   onSelectTrip: (trip: Trip) => void;
   onCreateTrip: (vars: CreateTripVars) => void;
@@ -18,6 +19,7 @@ interface Props {
 
 export function TripSidebar({
   trips,
+  templates,
   selectedTripId,
   onSelectTrip,
   onCreateTrip,
@@ -31,14 +33,26 @@ export function TripSidebar({
       <div className="p-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-gray-900">{t("title")}</h1>
-          <Link
-            href="/account"
-            className="text-sm text-gray-500 hover:text-gray-900"
-          >
-            {t("account")}
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/templates"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              {t("templates")}
+            </Link>
+            <Link
+              href="/account"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              {t("account")}
+            </Link>
+          </div>
         </div>
-        <CreateTripForm onSubmit={onCreateTrip} isPending={createTripPending} />
+        <CreateTripForm
+          templates={templates}
+          onSubmit={onCreateTrip}
+          isPending={createTripPending}
+        />
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2 bg-gray-50">
