@@ -80,7 +80,11 @@
     "packingTab": "🧳 Préparation",
     "returnTab": "🏠 Retour",
     "noItems": "Aucun élément pour l'instant. Ajoutez-en un ci-dessous !",
-    "noPackedItems": "Aucun élément emballé pour l'instant."
+    "noPackedItems": "Aucun élément emballé pour l'instant.",
+    "packingProgress": "{done} / {total} emballés",
+    "returnProgress": "{done} / {total} rapportés",
+    "packingComplete": "🎉 Tout est prêt, bon voyage !",
+    "returnComplete": "🏠 Ton sac est fait, bon retour !"
   },
   "addItemForm": {
     "placeholder": "Ajouter un élément…",

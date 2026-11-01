@@ -140,3 +140,17 @@ input, select, textarea {
     @apply font-sans;
   }
 }
+@keyframes confetti-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--confetti-dx), var(--confetti-dy))
+      rotate(var(--confetti-rotation));
+  }
+}

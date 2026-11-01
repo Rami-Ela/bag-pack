@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useMessages, useTranslations } from 'next-intl';
-import { Category, Item, Trip } from '@/app/types/trips';
-import { ItemRow } from './ItemRow';
-import { AddItemForm } from './AddItemForm';
+import { useState } from "react";
+import { useMessages, useTranslations } from "next-intl";
+import { Category, Item, Trip } from "@/app/types/trips";
+import { ItemRow } from "./ItemRow";
+import { AddItemForm } from "./AddItemForm";
+import { ConfettiBurst } from "./ConfettiBurst";
 
-function groupByCategory(items: Item[]): { label: string | null; items: Item[] }[] {
+function groupByCategory(
+  items: Item[],
+): { label: string | null; items: Item[] }[] {
   const groups: { label: string | null; items: Item[] }[] = [];
   const seen = new Map<string | null, Item[]>();
   for (const item of items) {
@@ -24,11 +27,69 @@ function groupByCategory(items: Item[]): { label: string | null; items: Item[] }
   return groups;
 }
 
+function ProgressGauge({
+  done,
+  total,
+  label,
+  completeLabel,
+}: {
+  done: number;
+  total: number;
+  label: string;
+  completeLabel: string;
+}) {
+  const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+  const isComplete = total > 0 && done === total;
+
+  // Confetti fire only on the transition to complete, not when a list is opened already complete
+  const [wasComplete, setWasComplete] = useState(isComplete);
+  const [burstCount, setBurstCount] = useState(0);
+  if (isComplete !== wasComplete) {
+    setWasComplete(isComplete);
+    if (isComplete) setBurstCount((count) => count + 1);
+  }
+
+  return (
+    <div className="relative mt-3">
+      {burstCount > 0 && <ConfettiBurst key={burstCount} />}
+      <div className="flex justify-between text-xs text-gray-500 mb-1">
+        <span>{label}</span>
+        <span>{percent}%</span>
+      </div>
+      <div
+        role="progressbar"
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="h-2 bg-gray-100 rounded-full overflow-hidden"
+      >
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${isComplete ? "bg-green-500" : "bg-blue-500"}`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      {/* Mounted only once complete, so the entry animation plays when the last item is checked */}
+      {isComplete && (
+        <p
+          key={completeLabel}
+          className="mt-2 text-center text-sm font-medium text-green-600 animate-in fade-in zoom-in-50 duration-500 motion-reduce:animate-none"
+        >
+          {completeLabel}
+        </p>
+      )}
+    </div>
+  );
+}
+
 interface Props {
   trip: Trip;
   categories: Category[];
   onBack: () => void;
-  onAddItem: (vars: { name: string; quantity: number; categoryId: string | null }) => void;
+  onAddItem: (vars: {
+    name: string;
+    quantity: number;
+    categoryId: string | null;
+  }) => void;
   addItemPending: boolean;
   onTogglePacked: (item: Item) => void;
   onToggleBroughtBack: (item: Item) => void;
@@ -47,17 +108,29 @@ export function TripDetail({
   onDeleteItem,
   onUpdateQuantity,
 }: Props) {
-  const t = useTranslations('tripDetail');
+  const t = useTranslations("tripDetail");
   const messages = useMessages();
-  const categoryTranslations = (messages?.categories ?? {}) as Record<string, string>;
-  const [tab, setTab] = useState<'packing' | 'return'>('packing');
+  const categoryTranslations = (messages?.categories ?? {}) as Record<
+    string,
+    string
+  >;
+  const [tab, setTab] = useState<"packing" | "return">("packing");
 
   const visibleItems =
-    tab === 'return' ? trip.items.filter((i) => i.packed) : trip.items;
+    tab === "return" ? trip.items.filter((i) => i.packed) : trip.items;
+
+  const packedCount = trip.items.filter((i) => i.packed).length;
+  const broughtBackCount = trip.items.filter(
+    (i) => i.packed && i.broughtBack,
+  ).length;
+  const progress =
+    tab === "packing"
+      ? { done: packedCount, total: trip.items.length }
+      : { done: broughtBackCount, total: packedCount };
 
   const isEmpty =
     trip.items.length === 0 ||
-    (tab === 'return' && trip.items.every((i) => !i.packed));
+    (tab === "return" && trip.items.every((i) => !i.packed));
 
   return (
     <div className="flex flex-col h-full">
@@ -71,7 +144,9 @@ export function TripDetail({
             ←
           </button>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">{trip.name}</h2>
+            <h2 className="text-xl font-bold text-gray-900 leading-tight">
+              {trip.name} TEST
+            </h2>
             {trip.destination && (
               <p className="text-sm text-gray-500">📍 {trip.destination}</p>
             )}
@@ -81,35 +156,57 @@ export function TripDetail({
         {/* Tabs */}
         <div className="flex bg-gray-100 rounded-xl p-1">
           <button
-            onClick={() => setTab('packing')}
+            onClick={() => setTab("packing")}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-              tab === 'packing' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+              tab === "packing"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500"
             }`}
           >
-            {t('packingTab')}
+            {t("packingTab")}
           </button>
           <button
-            onClick={() => setTab('return')}
+            onClick={() => setTab("return")}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-              tab === 'return' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+              tab === "return"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500"
             }`}
           >
-            {t('returnTab')}
+            {t("returnTab")}
           </button>
         </div>
+
+        {progress.total > 0 && (
+          <ProgressGauge
+            // Fresh state per trip and tab, so switching never triggers confetti
+            key={`${trip.id}-${tab}`}
+            done={progress.done}
+            total={progress.total}
+            label={t(
+              tab === "packing" ? "packingProgress" : "returnProgress",
+              progress,
+            )}
+            completeLabel={t(
+              tab === "packing" ? "packingComplete" : "returnComplete",
+            )}
+          />
+        )}
       </div>
 
       {/* Items list */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
         {isEmpty ? (
           <p className="text-center text-gray-400 mt-16 text-sm">
-            {trip.items.length === 0 ? t('noItems') : t('noPackedItems')}
+            {trip.items.length === 0 ? t("noItems") : t("noPackedItems")}
           </p>
         ) : (
           groupByCategory(visibleItems).map(({ label, items }) => (
-            <div key={label ?? '__uncategorized__'}>
+            <div key={label ?? "__uncategorized__"}>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">
-                {label ? (categoryTranslations[label] ?? label) : (categoryTranslations['other'] ?? 'Autre')}
+                {label
+                  ? (categoryTranslations[label] ?? label)
+                  : (categoryTranslations["other"] ?? "Autre")}
               </h3>
               <div className="space-y-2">
                 {items.map((item) => (
@@ -117,7 +214,11 @@ export function TripDetail({
                     key={item.id}
                     item={item}
                     tab={tab}
-                    onToggle={() => (tab === 'packing' ? onTogglePacked(item) : onToggleBroughtBack(item))}
+                    onToggle={() =>
+                      tab === "packing"
+                        ? onTogglePacked(item)
+                        : onToggleBroughtBack(item)
+                    }
                     onDelete={() => onDeleteItem(item)}
                     onUpdateQuantity={(qty) => onUpdateQuantity(item, qty)}
                   />
@@ -129,9 +230,13 @@ export function TripDetail({
       </div>
 
       {/* Add item form — packing tab only */}
-      {tab === 'packing' && (
+      {tab === "packing" && (
         <div className="p-4 bg-white border-t border-gray-200">
-          <AddItemForm categories={categories} onSubmit={onAddItem} isPending={addItemPending} />
+          <AddItemForm
+            categories={categories}
+            onSubmit={onAddItem}
+            isPending={addItemPending}
+          />
         </div>
       )}
     </div>
