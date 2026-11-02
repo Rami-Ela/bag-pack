@@ -145,7 +145,7 @@ export function TripDetail({
           </button>
           <div>
             <h2 className="text-xl font-bold text-gray-900 leading-tight">
-              {trip.name} TEST
+              {trip.name}
             </h2>
             {trip.destination && (
               <p className="text-sm text-gray-500">📍 {trip.destination}</p>
