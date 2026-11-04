@@ -9,7 +9,11 @@
       "Bash(curl -s http://localhost:3000)",
       "Bash(npx shadcn *)",
       "Bash(docker compose *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"lint exit $?\")",
+      "Bash(echo \"tsc exit $?\")",
+      "Bash(npx next *)"
     ]
   }
 }

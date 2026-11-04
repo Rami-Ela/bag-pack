@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bag Pack - Hors ligne</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: #f3f4f6;
+        color: #111827;
+        font-family: system-ui, -apple-system, sans-serif;
+        text-align: center;
+      }
+      .card {
+        max-width: 24rem;
+        background: #ffffff;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0 0 0.5rem;
+      }
+      p {
+        color: #4b5563;
+        margin: 0 0 1rem;
+      }
+      button {
+        border: 0;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #2563eb;
+        color: #ffffff;
+        font-size: 0.875rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Vous êtes hors ligne</h1>
+      <p>Vérifiez votre connexion internet puis réessayez.</p>
+      <button type="button" onclick="location.reload()">Réessayer</button>
+    </div>
+  </body>
+</html>

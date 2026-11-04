@@ -2,6 +2,11 @@
   "page": {
     "emptyState": "Sélectionnez un voyage ou créez-en un nouveau"
   },
+  "pwa": {
+    "iosInstall": "Installez Bag Pack : touchez <share></share> puis « Sur l'écran d'accueil ».",
+    "shareLabel": "Partager",
+    "dismiss": "Fermer"
+  },
   "sidebar": {
     "title": "🎒 Bag Pack",
     "account": "Mon compte",
