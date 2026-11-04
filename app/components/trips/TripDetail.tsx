@@ -6,6 +6,7 @@ import { Category, Item, Trip } from "@/app/types/trips";
 import { ItemRow } from "./ItemRow";
 import { AddItemForm } from "./AddItemForm";
 import { ConfettiBurst } from "./ConfettiBurst";
+import { DatePicker } from "@/app/components/ui/date-picker";
 
 function groupByCategory(
   items: Item[],
@@ -95,6 +96,10 @@ interface Props {
   onToggleBroughtBack: (item: Item) => void;
   onDeleteItem: (item: Item) => void;
   onUpdateQuantity: (item: Item, quantity: number) => void;
+  onUpdateDates: (dates: {
+    startDate: string | null;
+    endDate: string | null;
+  }) => void;
 }
 
 export function TripDetail({
@@ -107,6 +112,7 @@ export function TripDetail({
   onToggleBroughtBack,
   onDeleteItem,
   onUpdateQuantity,
+  onUpdateDates,
 }: Props) {
   const t = useTranslations("tripDetail");
   const messages = useMessages();
@@ -127,6 +133,17 @@ export function TripDetail({
     tab === "packing"
       ? { done: packedCount, total: trip.items.length }
       : { done: broughtBackCount, total: packedCount };
+
+  const startDate = trip.startDate?.slice(0, 10) ?? "";
+  const endDate = trip.endDate?.slice(0, 10) ?? "";
+  // Moving the start past the end drags the end along, so the range stays valid.
+  const changeStartDate = (value: string) =>
+    onUpdateDates({
+      startDate: value,
+      endDate: endDate && endDate < value ? value : endDate || null,
+    });
+  const changeEndDate = (value: string) =>
+    onUpdateDates({ startDate: startDate || null, endDate: value });
 
   const isEmpty =
     trip.items.length === 0 ||
@@ -150,6 +167,30 @@ export function TripDetail({
             {trip.destination && (
               <p className="text-sm text-gray-500">📍 {trip.destination}</p>
             )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-500 mb-1 pl-1">
+              {t("startDate")}
+            </span>
+            <DatePicker
+              value={startDate}
+              onChange={changeStartDate}
+              placeholder={t("datePlaceholder")}
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-500 mb-1 pl-1">
+              {t("endDate")}
+            </span>
+            <DatePicker
+              value={endDate}
+              onChange={changeEndDate}
+              minDate={startDate}
+              placeholder={t("datePlaceholder")}
+            />
           </div>
         </div>
 

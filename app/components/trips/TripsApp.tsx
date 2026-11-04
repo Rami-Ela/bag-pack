@@ -34,6 +34,7 @@ export function TripsApp() {
     addItemMutation,
     togglePackedMutation,
     toggleBroughtBackMutation,
+    updateTripDatesMutation,
     deleteTripMutation,
     deleteItemMutation,
     updateQuantityMutation,
@@ -92,6 +93,12 @@ export function TripsApp() {
                 tripId: currentTrip.id,
                 item,
                 quantity,
+              })
+            }
+            onUpdateDates={(dates) =>
+              updateTripDatesMutation.mutate({
+                tripId: currentTrip.id,
+                ...dates,
               })
             }
           />

@@ -11,7 +11,10 @@
     "title": "🎒 Bag Pack",
     "account": "Mon compte",
     "noTrips": "Aucun voyage pour l'instant",
-    "templates": "Modèles"
+    "templates": "Modèles",
+    "ongoing": "En cours",
+    "upcoming": "À venir",
+    "past": "Terminés ({count})"
   },
   "auth": {
     "namePlaceholder": "Nom (optionnel)",
@@ -86,6 +89,9 @@
     "returnTab": "🏠 Retour",
     "noItems": "Aucun élément pour l'instant. Ajoutez-en un ci-dessous !",
     "noPackedItems": "Aucun élément emballé pour l'instant.",
+    "startDate": "Départ",
+    "endDate": "Retour",
+    "datePlaceholder": "Non définie",
     "packingProgress": "{done} / {total} emballés",
     "returnProgress": "{done} / {total} rapportés",
     "packingComplete": "🎉 Tout est prêt, bon voyage !",
