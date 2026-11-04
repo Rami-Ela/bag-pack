@@ -61,13 +61,6 @@ export function TripSidebar({
             </Link>
           </div>
         </div>
-        {/* Ongoing trips sit above everything else: they are what the user needs right now */}
-        {ongoing.length > 0 && (
-          <section className="mb-4">
-            <SectionTitle>{t("ongoing")}</SectionTitle>
-            {renderCards(ongoing)}
-          </section>
-        )}
         <CreateTripForm
           templates={templates}
           onSubmit={onCreateTrip}
@@ -80,6 +73,12 @@ export function TripSidebar({
           <p className="text-sm text-gray-400 text-center mt-8">
             {t("noTrips")}
           </p>
+        )}
+        {ongoing.length > 0 && (
+          <section className="mb-2">
+            <SectionTitle>{t("ongoing")}</SectionTitle>
+            {renderCards(ongoing)}
+          </section>
         )}
         {upcoming.length > 0 && (
           <section className="mb-2">
