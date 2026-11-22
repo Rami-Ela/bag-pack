@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { unauthorized } from "@/lib/auth/api";
 import { sendTripReminders } from "@/lib/notifications/trip-reminders";
 
-// Vercel Cron sends "Authorization: Bearer $CRON_SECRET". Hashing both sides gives
+// Vercel Schedules (path target) sends "Authorization: Bearer $CRON_SECRET". Hashing both sides gives
 // equal-length buffers, as timingSafeEqual requires.
 function isAuthorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;

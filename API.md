@@ -179,7 +179,7 @@ GET /api/cron/trip-reminders
 Authorization: Bearer $CRON_SECRET
 ```
 
-Called daily by Vercel Cron (`vercel.json`, 17:00 UTC: 18:00 Paris in winter, 19:00 in summer). Notifies every device of the owner of each trip starting tomorrow (Europe/Paris calendar day). A trip records the start date it was reminded for (`reminderSentFor`), so re-running is harmless and moving the trip re-arms the reminder. Subscriptions the push service reports as gone (404/410) are deleted.
+Called daily by a Vercel Schedule (`vercel.json` → `schedules.trip-reminders`, 18:00 Europe/Paris all year round). Notifies every device of the owner of each trip starting tomorrow (Europe/Paris calendar day). A trip records the start date it was reminded for (`reminderSentFor`), so re-running is harmless and moving the trip re-arms the reminder. Subscriptions the push service reports as gone (404/410) are deleted.
 
 **Response:**
 ```json

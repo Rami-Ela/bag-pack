@@ -1,9 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [
-    {
+  "schedules": {
+    "trip-reminders": {
+      "schedule": "0 18 * * *",
+      "timezone": "Europe/Paris",
       "path": "/api/cron/trip-reminders",
-      "schedule": "0 17 * * *"
+      "requestMethod": "GET"
     }
-  ]
+  }
 }
