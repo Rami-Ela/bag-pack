@@ -4,13 +4,7 @@ import { useState } from "react";
 import { useMessages, useTranslations } from "next-intl";
 import { Category } from "@/app/types/trips";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ChevronDownIcon } from "lucide-react";
 
 interface Props {
   categories: Category[];
@@ -76,34 +70,27 @@ export function AddItemForm({ categories, onSubmit, isPending }: Props) {
         </div>
       </div>
       <div className="flex gap-2">
-        <Select
-          value={categoryId ?? ""}
-          onValueChange={(v) => setCategoryId(v || null)}
-        >
-          <SelectTrigger className="w-full h-12! px-4 rounded-xl text-base!">
-            <SelectValue>
-              {(value: string | null) => {
-                if (!value)
-                  return (
-                    <span className="text-muted-foreground">
-                      {t("categoryPlaceholder")}
-                    </span>
-                  );
-                const cat = categories.find((c) => c.id === value);
-                return cat
-                  ? (categoryTranslations[cat.name] ?? cat.name)
-                  : value;
-              }}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent className="text-base">
+        <div className="relative flex-1 min-w-0">
+          <select
+            value={categoryId ?? ""}
+            onChange={(e) => setCategoryId(e.target.value || null)}
+            aria-label={t("categoryPlaceholder")}
+            className={`w-full h-12 pl-4 pr-10 appearance-none bg-white border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              categoryId ? "text-gray-900" : "text-gray-500"
+            }`}
+          >
+            <option value="">{t("categoryPlaceholder")}</option>
             {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
+              <option key={cat.id} value={cat.id}>
                 {categoryTranslations[cat.name] ?? cat.name}
-              </SelectItem>
+              </option>
             ))}
-          </SelectContent>
-        </Select>
+          </select>
+          <ChevronDownIcon
+            aria-hidden
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-5 text-gray-500"
+          />
+        </div>
         <Button
           type="submit"
           disabled={isPending}
