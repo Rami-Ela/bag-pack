@@ -48,7 +48,7 @@ export async function sendTripReminders(
   for (const trip of trips) {
     const message = {
       title: t("tripReminder.title", { name: trip.name }),
-      body: t("tripReminder.body", { count: trip._count.items }),
+      body: t("tripReminder.body"),
       url: `/?trip=${encodeURIComponent(trip.id)}`,
       tag: `trip-reminder-${trip.id}`,
     };
