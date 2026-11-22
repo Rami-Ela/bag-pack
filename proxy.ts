@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth/cookie";
 
 const PUBLIC_PATHS = ["/login", "/signup"];
+// Called by Vercel Cron without a session; these routes check CRON_SECRET themselves.
+const CRON_PREFIX = "/api/cron/";
 
 // Optimistic check on cookie presence only. The real session validation happens in
 // pages and route handlers via getCurrentUser(); login/signup pages redirect to "/"
 // themselves when the session is valid, which avoids loops on a stale cookie.
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (PUBLIC_PATHS.includes(pathname) || req.cookies.has(SESSION_COOKIE)) {
+  if (
+    PUBLIC_PATHS.includes(pathname) ||
+    pathname.startsWith(CRON_PREFIX) ||
+    req.cookies.has(SESSION_COOKIE)
+  ) {
     return NextResponse.next();
   }
 

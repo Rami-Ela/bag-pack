@@ -18,13 +18,29 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  trips          Trip[]
-  itemCategories ItemCategory[]
-  itemTemplates  ItemTemplate[]
-  tripTemplates  TripTemplate[]
-  sessions       Session[]
+  trips             Trip[]
+  itemCategories    ItemCategory[]
+  itemTemplates     ItemTemplate[]
+  tripTemplates     TripTemplate[]
+  sessions          Session[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
+}
+
+// One row per device that accepted notifications. The endpoint is unique to the browser
+// install, so re-subscribing from the same device (even as another user) reuses the row.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 // The cookie holds a random token; only its SHA-256 is stored, so a DB leak does not leak live sessions.
@@ -40,15 +56,17 @@ model Session {
 }
 
 model Trip {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name        String
-  destination String?
-  startDate   DateTime?
-  endDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  destination     String?
+  startDate       DateTime?
+  endDate         DateTime?
+  // Start date the eve-of-departure reminder was sent for: moving the trip re-arms it.
+  reminderSentFor DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   items PackingListItem[]
 

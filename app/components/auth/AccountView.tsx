@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { AuthFormState, changePassword, logout } from "@/app/actions/auth";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password-rules";
+import { NotificationSettings } from "@/app/components/notifications/NotificationSettings";
 
 const INPUT_CLASS =
   "w-full px-3 py-3 text-sm border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500";
@@ -76,6 +77,8 @@ export function AccountView({ email }: Props) {
             {t("account.submit")}
           </button>
         </form>
+
+        <NotificationSettings />
 
         <button
           type="button"
