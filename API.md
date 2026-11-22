@@ -1,6 +1,6 @@
 # Bag Pack API
 
-All endpoints require an authenticated session (httpOnly `session` cookie set on login/signup). Requests without a valid session get `401`; resources owned by another user return `404`.
+All endpoints require an authenticated session (httpOnly `session` cookie set on login/signup), except `/api/cron/*` which authenticates with `CRON_SECRET`. Requests without a valid session get `401`; resources owned by another user return `404`.
 
 ## Endpoints
 
@@ -142,11 +142,65 @@ PATCH /api/trips/[tripId]/items/[itemId]/brought-back
 
 ---
 
+### Notifications
+
+#### Register this device for push notifications
+```
+POST /api/push-subscriptions
+```
+
+**Request body:** the browser's `PushSubscription.toJSON()`
+```json
+{
+  "endpoint": "https URL (required)",
+  "keys": { "p256dh": "string (required)", "auth": "string (required)" }
+}
+```
+
+Upserts on `endpoint`: a device re-registered under another account moves to that account.
+
+**Response:** `204`
+
+#### Unregister this device
+```
+DELETE /api/push-subscriptions
+```
+
+**Request body:**
+```json
+{ "endpoint": "string (required)" }
+```
+
+**Response:** `204`
+
+#### Send eve-of-departure reminders (cron)
+```
+GET /api/cron/trip-reminders
+Authorization: Bearer $CRON_SECRET
+```
+
+Called daily by Vercel Cron (`vercel.json`, 17:00 UTC: 18:00 Paris in winter, 19:00 in summer). Notifies every device of the owner of each trip starting tomorrow (Europe/Paris calendar day). A trip records the start date it was reminded for (`reminderSentFor`), so re-running is harmless and moving the trip re-arms the reminder. Subscriptions the push service reports as gone (404/410) are deleted.
+
+**Response:**
+```json
+{ "trips": 1, "sent": 2, "expired": 0, "failed": 0 }
+```
+
+---
+
 ## Setup
 
 1. Set up your database connection in `.env.local`:
    ```
    DATABASE_URL="postgresql://user:password@localhost:5432/bagpack_dev"
+   ```
+
+   Trip reminders also need Web Push keys and a cron secret (set the same variables on Vercel):
+   ```
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY="..."  # npx web-push generate-vapid-keys
+   VAPID_PRIVATE_KEY="..."
+   VAPID_SUBJECT="mailto:you@example.com"  # contact sent to push services
+   CRON_SECRET="..."                       # openssl rand -hex 32
    ```
 
 2. Run migrations:

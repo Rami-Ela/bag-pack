@@ -7,6 +7,22 @@
     "shareLabel": "Partager",
     "dismiss": "Fermer"
   },
+  "notifications": {
+    "settings": {
+      "title": "Notifications",
+      "description": "Recevez un rappel la veille du départ pour préparer votre sac.",
+      "enable": "Activer sur cet appareil",
+      "disable": "Désactiver sur cet appareil",
+      "enabled": "Activées sur cet appareil.",
+      "unsupported": "Notifications indisponibles dans ce navigateur. Sur iPhone, installez d'abord l'app sur l'écran d'accueil.",
+      "denied": "Notifications bloquées : autorisez-les pour ce site dans les réglages du navigateur.",
+      "error": "Une erreur est survenue, réessayez."
+    },
+    "tripReminder": {
+      "title": "Départ demain : {name}",
+      "body": "{count, plural, =0 {Tout est emballé, bon voyage !} =1 {Il reste 1 objet à emballer.} other {Il reste # objets à emballer.}}"
+    }
+  },
   "sidebar": {
     "title": "🎒 Bag Pack",
     "account": "Mon compte",

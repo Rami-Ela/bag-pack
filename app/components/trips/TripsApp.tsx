@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Category, Template, Trip } from "@/app/types/trips";
@@ -39,6 +40,18 @@ export function TripsApp() {
     deleteItemMutation,
     updateQuantityMutation,
   } = useTripMutations(setSelectedTrip, selectedTrip?.id);
+
+  // A reminder notification opens "/?trip=<id>": select that trip once the list is loaded.
+  // State is adjusted during render (not in an effect) so the trip shows on the first paint.
+  const linkedTripId = useSearchParams().get("trip");
+  const [handledLinkId, setHandledLinkId] = useState<string | null>(null);
+  if (linkedTripId && linkedTripId !== handledLinkId) {
+    const linkedTrip = trips.find((t) => t.id === linkedTripId);
+    if (linkedTrip) {
+      setHandledLinkId(linkedTripId);
+      setSelectedTrip(linkedTrip);
+    }
+  }
 
   const currentTrip =
     trips.find((t) => t.id === selectedTrip?.id) ?? selectedTrip;
